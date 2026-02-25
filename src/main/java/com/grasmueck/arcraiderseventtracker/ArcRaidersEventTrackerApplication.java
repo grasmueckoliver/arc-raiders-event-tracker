@@ -17,22 +17,24 @@ public class ArcRaidersEventTrackerApplication {
         CollectMetaforgeApi collectEventDataClient = new CollectMetaforgeApi();
 
         collectedData = collectEventDataClient.collectAllEvents();
-        System.out.println("API call successful.");
 
-        FilterEvents filterEvents = new FilterEvents();
+        if (collectedData != null) {
+            System.out.println("API call successful.");
+            FilterEvents filterEvents = new FilterEvents();
 
-        if (args.length > 0) {
-            System.out.println("Filtering events for event name: " + args[0] + " and map name: " + args[1]);
-            System.out.println(filterEvents.filterEvents(args[0], args[1], collectedData.toString()));
-        } if (args.length > 2) {
-            System.out.println("Filtering events for event name: " + args[2] + " and map name: " + args[3]);
-            System.out.println(filterEvents.filterEvents(args[2], args[3], collectedData.toString()));
-        } if (args.length > 4) {
-            System.out.println("Filtering events for event name: " + args[4] + " and map name: " + args[5]);
-            System.out.println(filterEvents.filterEvents(args[4], args[5], collectedData.toString()));
-        } if (args.length > 6) {
-            System.out.println("Filtering events for event name: " + args[6] + " and map name: " + args[7]);
-            System.out.println(filterEvents.filterEvents(args[6], args[7], collectedData.toString()));
+            if (args.length > 0) {
+                System.out.println("Filtering events for event name: " + args[0] + " and map name: " + args[1]);
+                System.out.println(filterEvents.filterEvents(args[0], args[1], collectedData.toString()));
+            } if (args.length > 2) {
+                System.out.println("Filtering events for event name: " + args[2] + " and map name: " + args[3]);
+                System.out.println(filterEvents.filterEvents(args[2], args[3], collectedData.toString()));
+            } if (args.length > 4) {
+                System.out.println("Filtering events for event name: " + args[4] + " and map name: " + args[5]);
+                System.out.println(filterEvents.filterEvents(args[4], args[5], collectedData.toString()));
+            } if (args.length > 6) {
+                System.out.println("Filtering events for event name: " + args[6] + " and map name: " + args[7]);
+                System.out.println(filterEvents.filterEvents(args[6], args[7], collectedData.toString()));
+            }
         }
     }
 }
