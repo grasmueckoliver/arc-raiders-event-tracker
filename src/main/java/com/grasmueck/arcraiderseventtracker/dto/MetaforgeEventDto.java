@@ -8,8 +8,11 @@ import lombok.Getter;
 public record MetaforgeEventDto(
         @Getter
         String name,
+        @Getter
         String icon,
+        @Getter
         long startTime,
+        @Getter
         long endTime,
         @Getter
         String map

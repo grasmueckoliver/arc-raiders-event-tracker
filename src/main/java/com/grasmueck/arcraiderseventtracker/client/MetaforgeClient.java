@@ -1,16 +1,18 @@
 package com.grasmueck.arcraiderseventtracker.client;
 
 import com.grasmueck.arcraiderseventtracker.dto.MetaforgeResponseDto;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
 import java.io.IOException;
 
 
-
+// Client class to interact with the Metaforge API
+@Slf4j
 @Component
 public class MetaforgeClient {
-    public static final String COLLECT_METAFORGE_API_FAILED = "COLLECT_METAFORGE_API_FAILED";
     public static final String METAFORGE_ALL_SCHEDULED_EVENTS_API_URL = "/events-schedule";
 
     private final RestClient restClient;
@@ -19,35 +21,38 @@ public class MetaforgeClient {
         this.restClient = metaforgeRestClient;
     }
 
-
     public MetaforgeResponseDto collectAllEvents() {
         return collectAny(METAFORGE_ALL_SCHEDULED_EVENTS_API_URL);
     }
 
+    // General method to collect data from any specified API endpoint with error handling
     public MetaforgeResponseDto collectAny(String apiName) {
+
         try {
             return requestApi(apiName);
         } catch (IOException e) {
-            System.err.println("Request failed (I/O): " + e.getMessage());
+            log.error("Request failed (I/O): {}", e.getMessage());
         } catch (InterruptedException e) {
-            System.err.println("Request interrupted: " + e.getMessage());
-            Thread.currentThread().interrupt();
+            log.error("Request interrupted: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            System.err.println("Invalid URL: " + restClient.get() + " -> " + e.getMessage());
+            log.error("Invalid URL: {} -> {}", restClient.get(), e.getMessage());
+        } catch (RuntimeException e) {
+            log.error("API error: {}", e.getMessage());
         }
 
         return null;
     }
 
+    // Helper method to perform the API request and handle errors
     public MetaforgeResponseDto requestApi(String apiName) throws IOException, InterruptedException {
         return restClient.get()
                 .uri(apiName)
                 .retrieve()
-                .onStatus(status -> status.is4xxClientError(),
+                .onStatus(HttpStatusCode::is4xxClientError,
                         (request, response) -> {
                             throw new RuntimeException("Client error from Metaforge API");
                         })
-                .onStatus(status -> status.is5xxServerError(),
+                .onStatus(HttpStatusCode::is5xxServerError,
                         (request, response) -> {
                             throw new RuntimeException("Server error from Metaforge API");
                         })

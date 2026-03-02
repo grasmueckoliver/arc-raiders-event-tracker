@@ -3,9 +3,9 @@ package com.grasmueck.arcraiderseventtracker.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClient.Builder;
 
 
+// This configuration class defines beans for RestClient and its builder, which are used to make HTTP requests to the Metaforge API.
 @Configuration
 public class RestClientConfig {
 
