@@ -1,62 +1,47 @@
 package com.grasmueck.arcraiderseventtracker.service;
 
+import com.grasmueck.arcraiderseventtracker.dto.MetaforgeEventDto;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.springframework.stereotype.Service;
 
-import java.sql.Time;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
+// Service class to filter events based on requested event name and map name, and extract their start times as hours of the day.
+@Service
 @Slf4j
 public class FilterEvents {
 
+    public ArrayList<Integer> filterEventsByStartTimes(String requestedEventName, String requestedMapName, List<MetaforgeEventDto> collectedData) {
+        if (requestedEventName == null || requestedMapName == null || collectedData == null) return new ArrayList<>();
 
-    public ArrayList<Integer> filterEvents(String requestedEventName, String requestedMapName, String collectedData) {
-        try {
-            JSONParser parser = new JSONParser();
-            Object obj = parser.parse((collectedData));
-            JSONObject jsonObject = (JSONObject) obj;
-            JSONArray jsonArray = (JSONArray) jsonObject.get("data");
-            ArrayList<JSONObject> filteredEvents = new ArrayList<>();
-            ArrayList<Integer> timeArray = new ArrayList<>();
+        return collectedData.stream()
+                .filter(e -> e.name().contains(requestedEventName) && e.map().contains(requestedMapName))
+                .map(e -> getHour(e.startTime()))
+                .filter(h -> h != Integer.MAX_VALUE)
+                .sorted()
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 
-            for (Object event : jsonArray) {
-
-                JSONObject eventObj = (JSONObject) event;
-
-                if (requestedEventName != null && requestedMapName != null) {
-                    if (eventObj.get("name").equals(requestedEventName) &&
-                            eventObj.get("map").equals(requestedMapName)) {
-
-                        Time time = new Time((long) eventObj.get("startTime"));
-                        JSONObject filterObj = new JSONObject(
-                                Map.of("name", eventObj.get("name"),
-                                        "map", eventObj.get("map"),
-                                        "time", time));
-
-                        filteredEvents.add(filterObj);
-                    }
-                }
-            }
-
-            for (JSONObject filteredEvent : filteredEvents) {
-                timeArray.add(Integer.parseInt(filteredEvent.get("time").toString().split(":")[0]));
-            }
-
-            timeArray = timeArray.stream().sorted().collect(Collectors.toCollection(ArrayList::new));
-
-            return timeArray;
-        } catch (NullPointerException e) {
-            log.error("Null value encountered: {}", e.getMessage());
-        } catch (ParseException e) {
-            log.error("Failed to parse JSON: {}", e.getMessage());
-        } catch (Exception e) {
-            log.error("An unexpected error occurred: {}", e.getMessage());
+    // Helper: returns hour-of-day (0-23) or Integer.MAX_VALUE when unparsable/null
+    private static int getHour(Object t) {
+        if (t == null) return Integer.MAX_VALUE;
+        if (t instanceof Number) {
+            return Instant.ofEpochMilli(((Number) t).longValue()).atZone(ZoneId.systemDefault()).getHour();
         }
-        return null;
+        String s = t.toString().trim();
+        if (s.contains(":")) {
+            return LocalTime.parse(s).getHour();
+        }
+        try {
+            return Instant.ofEpochMilli(Long.parseLong(s)).atZone(ZoneId.systemDefault()).getHour();
+        } catch (NumberFormatException e) {
+            log.warn("Could not parse time '{}' while extracting hour", s);
+            return Integer.MAX_VALUE;
+        }
     }
 }
-
