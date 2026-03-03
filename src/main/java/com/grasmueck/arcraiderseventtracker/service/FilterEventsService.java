@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 // Service class to filter events based on requested event name and map name, and extract their start times as hours of the day.
 @Service
 @Slf4j
-public class FilterEvents {
+public class FilterEventsService {
 
     public ArrayList<Integer> filterEventsByStartTimes(String requestedEventName, String requestedMapName,
                                                        List<MetaforgeEventDto> collectedData) {
