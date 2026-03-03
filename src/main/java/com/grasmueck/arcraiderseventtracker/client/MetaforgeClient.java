@@ -43,7 +43,7 @@ public class MetaforgeClient {
         return null;
     }
 
-    // Helper method to perform the API request and handle errors
+    // Helper method to perform the API request and handle API errors
     public MetaforgeResponseDto requestApi(String apiName) throws IOException, InterruptedException {
         return restClient.get()
                 .uri(apiName)
