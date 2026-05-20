@@ -92,7 +92,7 @@ class RestEventsControllerTest {
         assertNotNull(result);
         assertEquals(HttpStatus.OK, result.getStatusCode());
         assertEquals(1, result.getBody().size());
-        assertEquals("Bird City", result.getBody().getFirst().name());
+        assertEquals("Bird City", result.getBody().get(0).name());
     }
 
     @Test

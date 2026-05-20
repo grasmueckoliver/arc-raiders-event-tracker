@@ -105,7 +105,7 @@ class MetaforgeCacheServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(0L, result.getFirst().startTime());
+        assertEquals(0L, result.get(0).startTime());
     }
 
     @Test
@@ -128,7 +128,7 @@ class MetaforgeCacheServiceTest {
         // Assert
         assertNotNull(result);
         assertEquals(1, result.size());
-        assertEquals(0L, result.getFirst().endTime());
+        assertEquals(0L, result.get(0).endTime());
     }
 
     @Test
