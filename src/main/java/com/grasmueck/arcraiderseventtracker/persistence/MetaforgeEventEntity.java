@@ -8,8 +8,9 @@ import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
-
-//JPA entity to cache Metaforge events relationally.
+/**
+ * JPA entity to cache Metaforge events relationally.
+ */
 @Entity
 @Table(name = "metaforge_event", uniqueConstraints = @UniqueConstraint(columnNames = {"name", "map_name", "start_time"}))
 @Data

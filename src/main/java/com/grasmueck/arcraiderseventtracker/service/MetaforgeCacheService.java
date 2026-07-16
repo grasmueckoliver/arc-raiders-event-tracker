@@ -13,9 +13,12 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-
-// Simple caching service that fetches events from Metaforge and upserts them into the relational DB using JPA.
+/**
+ * Service for caching and retrieving event data from Metaforge.
+ * Handles external API synchronization and conversion of entities to DTOs.
+ */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -32,15 +35,16 @@ public class MetaforgeCacheService {
             return;
         }
 
-        List<MetaforgeEventEntity> toSave = new ArrayList<>();
+        List<MetaforgeEventEntity> entityToSave = new ArrayList<>();
         Instant now = Instant.now();
 
         for (MetaforgeEventDto dto : response.data()) {
             Instant startInstant = Instant.ofEpochMilli(dto.startTime());
             Instant endInstant = Instant.ofEpochMilli(dto.endTime());
 
-            MetaforgeEventEntity entity = repository.findByNameAndMapNameAndStartTime(dto.name(), dto.map(), startInstant)
-                    .orElseGet(() -> MetaforgeEventEntity.builder().name(dto.name()).mapName(dto.map()).startTime(startInstant).build());
+            MetaforgeEventEntity entity = repository.findByNameAndMapNameAndStartTime(
+                    dto.name(), dto.map(), startInstant).orElseGet(() -> MetaforgeEventEntity.builder().name(
+                            dto.name()).mapName(dto.map()).startTime(startInstant).build());
 
             entity.setName(dto.name());
             entity.setIcon(dto.icon());
@@ -49,10 +53,26 @@ public class MetaforgeCacheService {
             entity.setEndTime(endInstant);
             entity.setLastUpdated(now);
 
-            toSave.add(entity);
+            entityToSave.add(entity);
         }
 
-        repository.saveAll(toSave);
-        log.info("Refreshed {} events into DB", toSave.size());
+        repository.saveAll(entityToSave);
+        log.info("Refreshed {} events into DB", entityToSave.size());
+    }
+
+    /**
+     * Retrieves all events from the database as DTOs.
+     *
+     * @return list of all events as MetaforgeEventDto
+     */
+    public List<MetaforgeEventDto> getAllEventsAsDto() {
+        return repository.findAll().stream()
+                .map(e -> new MetaforgeEventDto(
+                        e.getName(),
+                        e.getIcon(),
+                        e.getStartTime() != null ? e.getStartTime().toEpochMilli() : 0L,
+                        e.getEndTime() != null ? e.getEndTime().toEpochMilli() : 0L,
+                        e.getMapName()))
+                .collect(Collectors.toList());
     }
 }
