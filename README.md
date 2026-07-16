@@ -55,11 +55,12 @@ graph TD
 ### Synchronization flow
 
 1. `MetaforgeCacheScheduler` triggers a cache refresh.
-2. `MetaforgeClient` requests `/events-schedule` from the Metaforge API.
-3. `MetaforgeCacheService` maps the response to JPA entities.
-4. Existing events are identified by `name`, `map_name`, and `start_time`.
-5. New or updated entities are persisted in a batch through `saveAll(...)`.
-6. REST requests are served from the PostgreSQL cache rather than directly from the external API.
+2. `MetaforgeCacheService` requests the current schedule through `MetaforgeClient`.
+3. `MetaforgeClient` calls the Metaforge `/events-schedule` endpoint.
+4. The cache service converts the returned timestamps to `Instant` values.
+5. Existing records are looked up by event name, map name, and start time.
+6. New and existing entities are persisted in a batch through `saveAll(...)`.
+7. Client requests are served from the local PostgreSQL database instead of calling the external API directly.
 
 ## Project Structure
 
