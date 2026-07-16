@@ -40,28 +40,16 @@ separation, filtering logic, validation, monitoring, and automated testing in a 
 ## Architecture
 
 ```mermaid
-flowchart LR
-    USER["API Client"]
-    CONTROLLER["RestEventsController"]
-    FILTER["FilterEventsService"]
-    SCHEDULER["MetaforgeCacheScheduler"]
-    CACHE["MetaforgeCacheService"]
-    CLIENT["MetaforgeClient"]
-    API["Metaforge API"]
-    REPOSITORY["MetaforgeEventRepository"]
-    DB[("PostgreSQL")]
-
-    USER -->|"REST request"| CONTROLLER
-    CONTROLLER --> CACHE
-    CONTROLLER --> FILTER
-
-    SCHEDULER -->|"Scheduled refresh"| CACHE
-    CACHE --> CLIENT
-    CLIENT -->|"HTTP request"| API
-    API -->|"JSON response"| CLIENT
-
-    CACHE --> REPOSITORY
-    REPOSITORY --> DB
+graph TD
+    Scheduler["MetaforgeCacheScheduler"] --> Cache["MetaforgeCacheService"]
+    Cache --> Client["MetaforgeClient"]
+    Client --> ExternalApi["Metaforge API"]
+    ExternalApi --> Client
+    Cache --> Repository["MetaforgeEventRepository"]
+    Repository --> Database["PostgreSQL"]
+    ApiClient["API client"] --> Controller["RestEventsController"]
+    Controller --> Cache
+    Controller --> Filter["FilterEventsService"]
 ```
 
 ### Synchronization flow
@@ -110,8 +98,7 @@ The Maven Wrapper is included, so a separate Maven installation is not required.
 Create a PostgreSQL database named `arcdb`:
 
 ```sql
-CREATE
-DATABASE arcdb;
+CREATE DATABASE arcdb;
 ```
 
 The default development configuration expects:
